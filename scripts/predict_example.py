@@ -1,22 +1,22 @@
-# scripts/predict_example.py
+# scripts/predict_example.py 
 import joblib
 import pandas as pd
-import os # To help with file paths
+import os
+import sys
 
-print("--- CO Prediction Example ---")
+print("--- CO Prediction Example (Reading from sample_input.csv) ---")
 
 # --- Configuration ---
-# Construct the path relative to the script's location
-MODEL_DIR = os.path.join(os.path.dirname(__file__), '..', 'models')
-MODEL_FILE = os.path.join(MODEL_DIR, 'random_forest_co_model.joblib') # Use your actual model filename
+BASE_DIR = os.path.dirname(os.path.dirname(__file__)) # Get project root directory
+MODEL_FILE = os.path.join(BASE_DIR, 'models', 'random_forest_co_model.joblib')
+SAMPLE_INPUT_FILE = os.path.join(BASE_DIR, 'data', 'sample_input.csv')
 
 # --- IMPORTANT: Define the EXACT feature order expected by the model ---
-# Replace this list with the actual order from your training script!
+# This should still match the order used during training!
 EXPECTED_FEATURE_ORDER = [
     'Volume_m3', 'AmbientCO_ppm_Est', 'HourOfDay', 'MinuteOfHour', 'IsCooking',
     'TimeSinceCookStart_min', 'StoveType_ICS', 'StoveType_TCS', 'CO_ppm_Lag1',
     'CO_ppm_Lag2', 'CO_ppm_Lag5', 'CO_ppm_Lag10'
-    # Add/remove/reorder columns EXACTLY as used in training X_train
 ]
 # --------------------------------------------------------------------
 
@@ -27,53 +27,44 @@ try:
     print("Model loaded successfully.")
 except FileNotFoundError:
     print(f"ERROR: Model file not found at {MODEL_FILE}")
-    print("Ensure the model file exists in the 'models' directory.")
-    exit()
+    sys.exit(1)
 except Exception as e:
     print(f"ERROR loading model: {e}")
-    exit()
+    sys.exit(1)
 
-# --- Prepare Sample Input Data ---
-# Create a dictionary representing ONE row of input data
-# Use plausible values for demonstration
-print("\nPreparing sample input data...")
-sample_input_dict = {
-    'Volume_m3': [25.0],             # Example kitchen volume
-    'AmbientCO_ppm_Est': [1.0],     # Example ambient CO
-    'HourOfDay': [18],              # Example hour
-    'MinuteOfHour': [5],            # Example minute
-    'IsCooking': [1],               # Example: Currently cooking
-    'TimeSinceCookStart_min': [30.0], # Example: 30 mins into cooking
-    'StoveType_ICS': [1],           # Example: It's an ICS
-    'StoveType_TCS': [0],
-    'CO_ppm_Lag1': [15.5],          # Example: CO 1 min ago
-    'CO_ppm_Lag2': [14.0],          # Example: CO 2 mins ago
-    'CO_ppm_Lag5': [11.2],          # Example: CO 5 mins ago
-    'CO_ppm_Lag10': [8.1]           # Example: CO 10 mins ago
-    # --- Make sure ALL required features are included ---
-}
+# --- Load Sample Input Data from CSV ---
 try:
-  sample_input_df = pd.DataFrame(sample_input_dict)
-  # Reorder columns to match the training order
-  sample_input_df = sample_input_df[EXPECTED_FEATURE_ORDER]
-  print("Sample Input DataFrame:")
-  print(sample_input_df)
-except KeyError as e:
-    print(f"ERROR: Feature mismatch in sample input. Missing/misnamed: {e}")
-    print(f"       Ensure sample_input_dict keys match EXPECTED_FEATURE_ORDER.")
-    exit()
+    print(f"Loading sample input data from: {SAMPLE_INPUT_FILE}")
+    sample_input_df = pd.read_csv(SAMPLE_INPUT_FILE)
+    print(f"Loaded {len(sample_input_df)} sample row(s).")
+    # Ensure all expected columns are present
+    missing_cols = set(EXPECTED_FEATURE_ORDER) - set(sample_input_df.columns)
+    if missing_cols:
+        print(f"ERROR: Sample input CSV is missing columns: {missing_cols}")
+        sys.exit(1)
+    # Reorder columns from CSV to match the training order
+    sample_input_df = sample_input_df[EXPECTED_FEATURE_ORDER]
+    print("Sample Input DataFrame (from CSV):")
+    print(sample_input_df)
+except FileNotFoundError:
+     print(f"ERROR: Sample input file not found at {SAMPLE_INPUT_FILE}")
+     sys.exit(1)
 except Exception as e:
-    print(f"ERROR preparing sample input DataFrame: {e}")
-    exit()
+    print(f"ERROR reading or processing sample input CSV: {e}")
+    sys.exit(1)
 
-
-# --- Make Prediction ---
+# --- Make Predictions ---
 try:
-    print("\nMaking prediction...")
+    print("\nMaking prediction(s)...")
     predicted_co_ppm = model.predict(sample_input_df)
-    print(f"===> Predicted CO: {predicted_co_ppm[0]:.2f} ppm")
+
+    # Print predictions for each row in the sample input
+    print("\n--- Predictions ---")
+    for i, prediction in enumerate(predicted_co_ppm):
+        print(f"Input Row {i+1}: Predicted CO = {prediction:.2f} ppm")
+
 except Exception as e:
     print(f"ERROR during prediction: {e}")
-    print("      Check if input data format matches model expectations.")
 
 print("\n--- Example Finished ---")
+print(f"Hint: You can modify '{SAMPLE_INPUT_FILE}' to test different scenarios.")
