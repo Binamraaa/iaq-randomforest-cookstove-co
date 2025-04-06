@@ -4,8 +4,8 @@ import datetime
 import sys # To exit gracefully on error
 
 # --- Configuration ---
-INPUT_CO_DATA_FILE = 'Cleaned_CO_with_Date.csv' # Your file with the added Date column
-HOUSEHOLD_INFO_FILE = 'household_info.csv'    # Your file with Volume, StoveType, etc.
+INPUT_CO_DATA_FILE = 'Cleaned_CO_with_Date.csv' # file with the added Date column
+HOUSEHOLD_INFO_FILE = 'household_info.csv'    # file with Volume, StoveType, etc.
 OUTPUT_ML_FILE = 'ML_Ready_Data.csv'          # File to be created
 
 LAG_FEATURES_MINUTES = [1, 2, 5, 10]          # Which past CO values to use as features
