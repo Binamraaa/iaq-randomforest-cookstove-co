@@ -98,11 +98,3 @@ This section explains how to use the provided code to load the trained Random Fo
 *   **Model File:** The prediction script loads the trained model from `models/random_forest_co_model.joblib` using the `joblib` library.
 *   **Large Datasets:** This example script is designed for making predictions on a small number of samples provided in the CSV. For predicting on large datasets, you would adapt the data loading part of the script accordingly.
 
-## Model Usage (`random_forest_co_model.joblib`)
-
-The trained scikit-learn `RandomForestRegressor` model is saved in the `/models/` directory.
-
-**Requirements:**
-Install necessary libraries:
-```bash
-pip install -r requirements.txt
