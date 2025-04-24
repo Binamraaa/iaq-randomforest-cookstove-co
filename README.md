@@ -26,7 +26,7 @@ To overcome these limitations, a data-driven approach using a **Random Forest Re
 *   Time Features (`HourOfDay`, `MinuteOfHour`)
 *   Cooking Status (`IsCooking`, `TimeSinceCookStart_min`)
 
-*(See `scripts/prepare_data.py` for full feature engineering details)*
+*(See `scripts/Cleaned_CO_with_date.py` for full feature engineering details)*
 
 ## Results & Performance
 
